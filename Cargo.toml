@@ -10,7 +10,7 @@ An insertion-ordered hash map that provides O(1) (amortized) insertion, lookup, 
 
 [dependencies]
 derive-where = "1.6.0"
-index_list = "0.2.16"
+index_list = { path = "../index-list", features = ["iter_mut"] }
 
 [dev-dependencies]
 quickcheck = "1.0.3"

@@ -65,6 +65,10 @@ impl<K, V> OrderedHashMap<K, V> {
         self.order.iter().map(|(k, v)| (k, v))
     }
 
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = (&K, &mut V)> {
+        self.order.iter_mut().map(|(k, v)| (&*k, v))
+    }
+
     /// Returns an iterator over keys in insertion order.
     pub fn keys(&self) -> impl Iterator<Item = &K> {
         self.iter().map(|(k, _)| k)
@@ -73,6 +77,10 @@ impl<K, V> OrderedHashMap<K, V> {
     /// Returns an iterator over values in insertion order.
     pub fn values(&self) -> impl Iterator<Item = &V> {
         self.iter().map(|(_, v)| v)
+    }
+
+    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> {
+        self.iter_mut().map(|(_, v)| v)
     }
 }
 
