@@ -112,6 +112,20 @@ fn entry_api_occupied_and_vacant_methods() {
 }
 
 #[test]
+fn vacant_entry_key_method() {
+    let mut m = OrderedHashMap::<&'static str, i32>::new();
+    match m.entry("z") {
+        Entry::Vacant(v) => {
+            assert_eq!(v.key(), &"z");
+            // After checking key we can insert and ensure stored
+            v.insert(9);
+        }
+        _ => panic!("Expected VacantEntry"),
+    }
+    assert_eq!(m.get(&"z"), Some(&9));
+}
+
+#[test]
 fn entry_api_occupied_key_and_remove() {
     let mut m = OrderedHashMap::<&'static str, i32>::new();
     m.insert("a", 1);
@@ -317,6 +331,21 @@ fn len_and_iteration_consistency() {
     assert_eq!(m.len(), m.iter().count());
 }
 
+#[test]
+fn pop_front_and_back() {
+    let mut m = OrderedHashMap::<&'static str, i32>::new();
+    assert_eq!(m.pop_front(), None);
+    assert_eq!(m.pop_back(), None);
+    m.insert("a", 1);
+    m.insert("b", 2);
+    m.insert("c", 3);
+    assert_eq!(m.pop_front(), Some(("a", 1)));
+    assert_eq!(m.pop_back(), Some(("c", 3)));
+    assert_eq!(m.pop_back(), Some(("b", 2)));
+    assert_eq!(m.pop_front(), None);
+    assert!(m.is_empty());
+}
+
 // QuickCheck property: applying a sequence of operations to both the OrderedHashMap and a
 // reference (Vec order + HashMap values) yields identical final ordered (k,v) list.
 #[derive(Clone, Debug)]
@@ -324,15 +353,20 @@ enum Op {
     Insert(u8, u16), // key, value
     Remove(u8),      // key
     Update(u8, u16), // key, new value (simulate via entry if present)
+    PopFront,
+    PopBack,
 }
 
 impl quickcheck::Arbitrary for Op {
     fn arbitrary(g: &mut quickcheck::Gen) -> Self {
-        let choice = u8::arbitrary(g) % 3;
+        let choice = u8::arbitrary(g) % 5;
         match choice {
             0 => Op::Insert(u8::arbitrary(g), u16::arbitrary(g)),
             1 => Op::Remove(u8::arbitrary(g)),
-            _ => Op::Update(u8::arbitrary(g), u16::arbitrary(g)),
+            2 => Op::Update(u8::arbitrary(g), u16::arbitrary(g)),
+            3 => Op::PopFront,
+            4 => Op::PopBack,
+            _ => unreachable!(),
         }
     }
 }
@@ -394,6 +428,28 @@ fn sequence_preserves_order(ops: Vec<Op>) -> bool {
                         return false;
                     }
                 }
+            }
+            Op::PopFront => {
+                let model_expected = if order.is_empty() {
+                    None
+                } else {
+                    let k = order.remove(0);
+                    let v = values.remove(&k).unwrap();
+                    Some((k, v))
+                };
+                let got = m.pop_front().map(|(k, v)| (k, v));
+                if got != model_expected { return false; }
+            }
+            Op::PopBack => {
+                let model_expected = if order.is_empty() {
+                    None
+                } else {
+                    let k = order.pop().unwrap();
+                    let v = values.remove(&k).unwrap();
+                    Some((k, v))
+                };
+                let got = m.pop_back().map(|(k, v)| (k, v));
+                if got != model_expected { return false; }
             }
         }
         // Invariants

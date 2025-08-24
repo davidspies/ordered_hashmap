@@ -127,6 +127,20 @@ impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
         Some((k_stored, v))
     }
 
+    pub fn pop_front(&mut self) -> Option<(K, V)> {
+        let Self { map, order } = self;
+        let (k, v) = order.remove_first()?;
+        map.remove(&k).unwrap();
+        Some((k, v))
+    }
+
+    pub fn pop_back(&mut self) -> Option<(K, V)> {
+        let Self { map, order } = self;
+        let (k, v) = order.remove_last()?;
+        map.remove(&k).unwrap();
+        Some((k, v))
+    }
+
     pub fn clear(&mut self) {
         let Self { map, order } = self;
         map.clear();
