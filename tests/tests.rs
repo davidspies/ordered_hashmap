@@ -126,6 +126,21 @@ fn vacant_entry_key_method() {
 }
 
 #[test]
+fn vacant_entry_into_key() {
+    let mut m = OrderedHashMap::<&'static str, i32>::new();
+    match m.entry("hello") {
+        Entry::Vacant(v) => {
+            let k = v.into_key();
+            assert_eq!(k, "hello");
+        }
+        _ => panic!("Expected VacantEntry"),
+    }
+    // Map should still be empty since we never inserted.
+    assert!(m.is_empty());
+    assert_eq!(m.get(&"hello"), None);
+}
+
+#[test]
 fn entry_api_occupied_key_and_remove() {
     let mut m = OrderedHashMap::<&'static str, i32>::new();
     m.insert("a", 1);

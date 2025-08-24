@@ -248,6 +248,10 @@ impl<'a, K, V> VacantEntry<'a, K, V> {
         self.entry.key()
     }
 
+    pub fn into_key(self) -> K {
+        self.entry.into_key()
+    }
+
     /// Insert a new entry into the map appended to the end.
     pub fn insert(self, value: V) -> &'a mut V
     where
