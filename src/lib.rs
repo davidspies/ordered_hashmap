@@ -59,6 +59,21 @@ impl<K, V> OrderedHashMap<K, V> {
         assert_eq!(map.is_empty(), order.is_empty());
         order.is_empty()
     }
+
+    /// Iterator over (&K, &V) in insertion order.
+    pub fn iter(&self) -> impl Iterator<Item = (&K, &V)> {
+        self.order.iter().map(|(k, v)| (k, v))
+    }
+
+    /// Returns an iterator over keys in insertion order.
+    pub fn keys(&self) -> impl Iterator<Item = &K> {
+        self.iter().map(|(k, _)| k)
+    }
+
+    /// Returns an iterator over values in insertion order.
+    pub fn values(&self) -> impl Iterator<Item = &V> {
+        self.iter().map(|(_, v)| v)
+    }
 }
 
 impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
@@ -147,21 +162,6 @@ impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
         let Self { map, order } = self;
         map.clear();
         order.clear();
-    }
-
-    /// Iterator over (&K, &V) in insertion order.
-    pub fn iter(&self) -> impl Iterator<Item = (&K, &V)> {
-        self.order.iter().map(|(k, v)| (k, v))
-    }
-
-    /// Returns an iterator over keys in insertion order.
-    pub fn keys(&self) -> impl Iterator<Item = &K> {
-        self.iter().map(|(k, _)| k)
-    }
-
-    /// Returns an iterator over values in insertion order.
-    pub fn values(&self) -> impl Iterator<Item = &V> {
-        self.iter().map(|(_, v)| v)
     }
 
     pub fn entry(&mut self, key: K) -> Entry<'_, K, V> {
