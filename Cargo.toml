@@ -1,0 +1,16 @@
+[package]
+name = "list_ordered_hashmap"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/davidspies/ordered_hashmap"
+description = """
+An insertion-ordered hash map that provides O(1) (amortized) insertion, lookup, update and removal.
+"""
+
+[dependencies]
+derive-where = "1.6.0"
+index_list = "0.2.16"
+
+[dev-dependencies]
+quickcheck = "1.0.3"
