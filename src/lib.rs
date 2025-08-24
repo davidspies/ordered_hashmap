@@ -40,7 +40,7 @@ pub struct OrderedHashMap<K, V> {
     order: IndexList<(K, V)>,
 }
 
-impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
+impl<K, V> OrderedHashMap<K, V> {
     pub fn new() -> Self {
         Self {
             map: HashMap::new(),
@@ -59,7 +59,9 @@ impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
         assert_eq!(map.is_empty(), order.is_empty());
         order.is_empty()
     }
+}
 
+impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
     /// Insert a key-value pair.
     /// - If the key is new: appends to the end; returns `None`.
     /// - If the key exists: replaces the value in-place; returns `Some(old_v)`.
