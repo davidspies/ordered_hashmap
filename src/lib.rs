@@ -65,6 +65,14 @@ impl<K, V> OrderedHashMap<K, V> {
         self.order.iter().map(|(k, v)| (k, v))
     }
 
+    pub fn for_each_mut(&mut self, mut f: impl FnMut(&K, &mut V)) {
+        let mut index = self.order.first_index();
+        while let Some((k, v)) = self.order.get_mut(index) {
+            f(k, v);
+            index = self.order.next_index(index);
+        }
+    }
+
     /// Returns an iterator over keys in insertion order.
     pub fn keys(&self) -> impl Iterator<Item = &K> {
         self.iter().map(|(k, _)| k)

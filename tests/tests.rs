@@ -36,6 +36,25 @@ fn basic_insert_get_iter_remove() {
 }
 
 #[test]
+fn for_each_mut_updates_values_and_preserves_order() {
+    let mut m = OrderedHashMap::<&'static str, i32>::new();
+    m.insert("a", 1);
+    m.insert("b", 2);
+    m.insert("c", 3);
+    let mut seen = Vec::new();
+    m.for_each_mut(|k, v| {
+        seen.push(*k);
+        *v += 10;
+    });
+    assert_eq!(seen, vec!["a", "b", "c"], "Keys visited in insertion order");
+    let items: Vec<_> = m.iter().map(|(&k, &v)| (k, v)).collect();
+    assert_eq!(items, vec![("a", 11), ("b", 12), ("c", 13)]);
+    // Ensure a second pass still yields same order / updated values
+    let items2: Vec<_> = m.iter().map(|(&k, &v)| (k, v)).collect();
+    assert_eq!(items2, items);
+}
+
+#[test]
 fn get_missing_value() {
     let mut m = OrderedHashMap::<&'static str, i32>::new();
     m.insert("a", 1);
