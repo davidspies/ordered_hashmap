@@ -453,7 +453,9 @@ fn sequence_preserves_order(ops: Vec<Op>) -> bool {
                     Some((k, v))
                 };
                 let got = m.pop_front().map(|(k, v)| (k, v));
-                if got != model_expected { return false; }
+                if got != model_expected {
+                    return false;
+                }
             }
             Op::PopBack => {
                 let model_expected = if order.is_empty() {
@@ -464,7 +466,9 @@ fn sequence_preserves_order(ops: Vec<Op>) -> bool {
                     Some((k, v))
                 };
                 let got = m.pop_back().map(|(k, v)| (k, v));
-                if got != model_expected { return false; }
+                if got != model_expected {
+                    return false;
+                }
             }
         }
         // Invariants
