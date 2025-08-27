@@ -176,10 +176,8 @@ impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
 
     pub fn entry(&mut self, key: K) -> Entry<'_, K, V> {
         let Self { map, order } = self;
-        match map.entry(key) {
-            StdEntry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry, order }),
-            StdEntry::Vacant(entry) => Entry::Vacant(VacantEntry { entry, order }),
-        }
+        let std_entry = map.entry(key);
+        Entry::new(std_entry, order)
     }
 }
 
@@ -196,6 +194,15 @@ pub struct OccupiedEntry<'a, K, V> {
 pub struct VacantEntry<'a, K, V> {
     entry: StdVacantEntry<'a, K, Index>,
     order: &'a mut IndexList<(K, V)>,
+}
+
+impl<'a, K, V> Entry<'a, K, V> {
+    pub(crate) fn new(entry: StdEntry<'a, K, Index>, order: &'a mut IndexList<(K, V)>) -> Self {
+        match entry {
+            StdEntry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry, order }),
+            StdEntry::Vacant(entry) => Entry::Vacant(VacantEntry { entry, order }),
+        }
+    }
 }
 
 impl<'a, K: Clone, V> Entry<'a, K, V> {
@@ -277,3 +284,4 @@ impl<'a, K, V> VacantEntry<'a, K, V> {
         v
     }
 }
+
