@@ -380,6 +380,65 @@ fn pop_front_and_back() {
     assert!(m.is_empty());
 }
 
+#[test]
+fn shrink_to_behavior() {
+    // Force the internal list to allocate a large capacity, then drastically reduce len so a shrink is meaningful.
+    let mut m = OrderedHashMap::with_capacity(8);
+    let total = 500usize; // large enough to grow internal storage
+    for i in 0..total {
+        m.insert(i, i as u32);
+    }
+    assert_eq!(m.len(), total);
+    // Remove most elements, keep only the first KEEP items.
+    let keep = 10usize;
+    for i in keep..total {
+        m.remove(&i).unwrap();
+    }
+    assert_eq!(m.len(), keep);
+    // Capacity should still reflect the large allocation from before removals.
+    let cap_before = m.capacity();
+    assert!(
+        cap_before > keep,
+        "precondition: need slack capacity to test shrink (cap_before={}, keep={})",
+        cap_before,
+        keep
+    );
+    let expected: Vec<_> = (0..keep).map(|i| (i, i as u32)).collect();
+    let snapshot: Vec<_> = m.iter().map(|(&k, &v)| (k, v)).collect();
+    assert_eq!(
+        snapshot, expected,
+        "order of remaining elements before shrink incorrect"
+    );
+
+    // Perform shrink below len (request 0) => should shrink to len.
+    m.shrink_to(0);
+    let cap_after = m.capacity();
+    assert!(cap_after >= keep);
+    assert!(
+        cap_after < cap_before,
+        "expected actual shrink (before={}, after={})",
+        cap_before,
+        cap_after
+    );
+    assert_eq!(
+        cap_after, keep,
+        "order list rebuild should set capacity exactly to len"
+    );
+    let snapshot_after: Vec<_> = m.iter().map(|(&k, &v)| (k, v)).collect();
+    assert_eq!(
+        snapshot_after, expected,
+        "order/value preservation after shrink"
+    );
+
+    // Requesting larger capacity with shrink_to should not grow.
+    m.shrink_to(cap_before * 2);
+    assert_eq!(m.capacity(), cap_after, "shrink_to must not grow capacity");
+
+    // shrink_to_fit again is a no-op now.
+    m.shrink_to_fit();
+    assert_eq!(m.capacity(), cap_after);
+}
+
 // QuickCheck property: applying a sequence of operations to both the OrderedHashMap and a
 // reference (Vec order + HashMap values) yields identical final ordered (k,v) list.
 #[derive(Clone, Debug)]

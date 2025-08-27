@@ -48,10 +48,22 @@ impl<K, V> OrderedHashMap<K, V> {
         }
     }
 
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            map: HashMap::with_capacity(capacity),
+            order: IndexList::with_capacity(capacity),
+        }
+    }
+
     pub fn len(&self) -> usize {
         let Self { map, order } = self;
         assert_eq!(map.len(), order.len());
         order.len()
+    }
+
+    pub fn capacity(&self) -> usize {
+        let Self { map, order } = self;
+        map.capacity().min(order.capacity())
     }
 
     pub fn is_empty(&self) -> bool {
@@ -176,5 +188,26 @@ impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
         let Self { map, order } = self;
         let std_entry = map.entry(key);
         Entry::new(std_entry, order)
+    }
+
+    pub fn shrink_to(&mut self, min_capacity: usize) {
+        let len = self.len();
+        let Self { map, order } = self;
+        map.shrink_to(min_capacity);
+        let min_capacity = min_capacity.max(len);
+        if min_capacity >= order.capacity() {
+            return;
+        }
+        let mut new_order = IndexList::with_capacity(min_capacity);
+        for (k, v) in order.drain_iter() {
+            let ind = new_order.insert_last((k, v));
+            let k = &new_order.get(ind).unwrap().0;
+            *map.get_mut(&k).unwrap() = ind;
+        }
+        *order = new_order;
+    }
+
+    pub fn shrink_to_fit(&mut self) {
+        self.shrink_to(0);
     }
 }
