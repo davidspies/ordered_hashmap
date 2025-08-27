@@ -7,8 +7,8 @@
 //! it in O(1) time. If the same key is inserted again later, it is treated as a fresh insertion and
 //! appears at the end of the iteration order.
 //!
-//! Internally the structure keeps a `HashMap<K, Index>` which maps each key to an index inside a
-//! doubly‑linked list (`IndexList<(K, V)>`). The list stores the actual
+//! Internally the structure keeps a [`HashMap<K, Index>`] which maps each key to an index inside a
+//! doubly‑linked list [`IndexList<(K, V)>`]. The list stores the actual
 //! `(K, V)` pairs plus linkage (next / prev indices) inside a single slab / arena structure. Each
 //! node is just a slot within that slab; inserting a new element only grows the slab
 //! vector, so there is not a separate heap allocation per entry. Removal uses the stored index to
@@ -16,15 +16,12 @@
 //! avoids both the per-node allocation overhead of a classic pointer‑based linked list and the O(n)
 //! element movement costs of a simple vector when deleting from the middle.
 //!
-//! The primary iteration methods (`iter`, `keys`, and `values`) yield items in insertion order.
+//! The primary iteration methods ([`iter`](OrderedHashMap::iter), [`keys`](OrderedHashMap::keys),
+//! and [`values`](OrderedHashMap::values)) yield items in insertion order.
 //! Operations `insert`, `get`, `get_mut`, `contains_key`, and `remove` are all O(1) on average.
 //!
-//! Debug assertions enforce two invariants: the `map` and `order` always have the same length, and
-//! each stored `(K, V)` pair’s key matches the key held in the hash map entry referencing it.
-//!
 //! The API is intentionally similar to `indexmap::IndexMap`, but this implementation relies on an
-//! `IndexList` so that insertions don't typically allocate memory and removals don't cause O(n)
-//! shifts.
+//! [`IndexList`] rather than a simple [`Vec`] so that removals don't cause O(n) shifts.
 
 use derive_where::derive_where;
 use index_list::{Index, IndexList};
