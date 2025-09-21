@@ -42,10 +42,10 @@ fn for_each_mut_updates_values_and_preserves_order() {
     m.insert("b", 2);
     m.insert("c", 3);
     let mut seen = Vec::new();
-    m.for_each_mut(|k, v| {
+    for (k, v) in m.iter_mut() {
         seen.push(*k);
         *v += 10;
-    });
+    }
     assert_eq!(seen, vec!["a", "b", "c"], "Keys visited in insertion order");
     let items: Vec<_> = m.iter().map(|(&k, &v)| (k, v)).collect();
     assert_eq!(items, vec![("a", 11), ("b", 12), ("c", 13)]);

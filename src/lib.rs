@@ -77,6 +77,12 @@ impl<K, V> OrderedHashMap<K, V> {
         self.order.iter().map(|(k, v)| (k, v))
     }
 
+    /// Iterator over (&K, &mut V) in insertion order.
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = (&K, &mut V)> {
+        self.order.iter_mut().map(|(k, v)| (&*k, v))
+    }
+
+    #[deprecated(note = "use `iter_mut` instead")]
     pub fn for_each_mut(&mut self, mut f: impl FnMut(&K, &mut V)) {
         let mut index = self.order.first_index();
         while let Some((k, v)) = self.order.get_mut(index) {
@@ -202,7 +208,7 @@ impl<K: Eq + Hash, V> OrderedHashMap<K, V> {
         for (k, v) in order.drain_iter() {
             let ind = new_order.insert_last((k, v));
             let k = &new_order.get(ind).unwrap().0;
-            *map.get_mut(&k).unwrap() = ind;
+            *map.get_mut(k).unwrap() = ind;
         }
         *order = new_order;
     }
